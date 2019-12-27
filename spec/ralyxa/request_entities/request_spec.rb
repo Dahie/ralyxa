@@ -129,7 +129,6 @@ RSpec.describe Ralyxa::RequestEntities::Request, vcr: true do
         described_class.new(stubbed_request, user_class).user_access_token_exists?
       end
     end
-
   end
 
   describe 'request verification' do
@@ -162,6 +161,34 @@ RSpec.describe Ralyxa::RequestEntities::Request, vcr: true do
       expect{
         described_class.new(invalid_request)
       }.to raise_error(AlexaVerifier::InvalidCertificateURIError, "Invalid certificate URI : URI scheme must be 'https'. Got: 'http'.")
+    end
+  end
+
+  describe '#confirmation_status' do
+    let(:stubbed_request) do
+      stub_sinatra_request({
+        "request": {
+          "type": "IntentRequest",
+          "intent": {
+            "name": "IntentName",
+            "confirmationStatus": confirmation_status
+          }
+        }
+      }.to_json)
+    end
+
+    {
+      'NONE' => :unknown,
+      'CONFIRMED' => :confirmed,
+      'DENIED' => :denied
+    }.each do |alexa_status, result|
+      context "status is #{alexa_status}" do
+        let(:confirmation_status) { alexa_status }
+        it "returns the confirmation_status #{result}" do
+          expect(described_class.new(stubbed_request).confirmation_status)
+            .to eq result
+        end
+      end
     end
   end
 

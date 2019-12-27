@@ -45,6 +45,17 @@ module Ralyxa
         session_attributes[attribute_name]
       end
 
+      def confirmation_status
+        case @request['request']['intent']['confirmationStatus']
+        when 'NONE'
+          :unknown
+        when 'CONFIRMED'
+          :confirmed
+        when 'DENIED'
+          :denied
+        end
+      end
+
       private
 
       def intent_request?
